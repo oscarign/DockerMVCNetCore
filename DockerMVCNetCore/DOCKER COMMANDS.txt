@@ -1,0 +1,67 @@
+docker pull nginx
+docker build -t aspnetapp .
+docker run -d -p 8085:80 --hostname aspnetapp --name aspnetapp1 aspnetapp
+
+docker images
+docker inspect aspnetapp1
+docker logs -t aspnetapp1
+docker logs aspnetapp1 -f
+docker ps
+docker ps -l
+docker ps -n 2
+docker ps -a
+
+docker exec aspnetapp1 hostname
+docker exec -it aspnetapp1 bash
+
+docker rm -f aspnetapp2
+docker rm aspnetapp2
+docker rename aspnetapp1 aspnetapp2
+docker stats aspnetapp1
+
+docker info
+
+***********************************************************************
+volumen nombrado para mantener persistencia de datos
+***********************************************************************
+
+docker volume create aspnetapp_volume
+docker volume ls
+
+
+***********************************************************************
+Dockerfile 1 (PUBLISH)
+***********************************************************************
+
+FROM mcr.microsoft.com/dotnet/aspnet:6.0 AS base
+WORKDIR /app
+EXPOSE 80
+
+COPY [".", "./"]
+ENTRYPOINT ["dotnet", "DockerMVCNetCore.dll"]
+
+
+***********************************************************************
+Dockerfile 1 (BUILD)
+***********************************************************************
+
+FROM mcr.microsoft.com/dotnet/aspnet:6.0 AS base
+WORKDIR /app
+EXPOSE 80
+
+FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
+WORKDIR /src
+COPY ["DockerMVCNetCore.csproj", "./"]
+RUN dotnet restore "./DockerMVCNetCore.csproj"
+COPY . .
+WORKDIR "/src/."
+RUN dotnet build "DockerMVCNetCore.csproj" -c Release -o /app/build
+
+FROM build AS publish
+RUN dotnet publish "DockerMVCNetCore.csproj" -c Release -o /app/publish /p:UseAppHost=false
+
+FROM base AS final
+WORKDIR /app
+COPY --from=publish /app/publish .
+ENTRYPOINT ["dotnet", "DockerMVCNetCore.dll"]
+
