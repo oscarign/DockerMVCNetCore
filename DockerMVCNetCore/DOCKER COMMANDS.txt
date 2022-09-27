@@ -21,6 +21,22 @@ docker stats aspnetapp1
 
 docker info
 
+docker exec -it a9c2ecf24225 bash
+docker network create net-prueba --subnet 192.168.0.0/24 --gateway 192.168.0.1
+docker network create --subnet 172.16.0.0/16 --gateway 172.16.0.1 net-claseb
+docker network inspect net-prueba
+docker run -dti --network net-prueba --name centos1 centos
+docker run -dti --network net-prueba --ip 192.168.0.10 --name centos2 centos
+docker logs 17fb8edf808e
+docker rm -f 17fb8edf808e ca98f46b2137
+docker run -d --network net-prueba --name centos1 centos
+docker image rm -f 5d0da3dc9764
+docker network ls
+docker run -dti --name centos3 --network net-claseb centos
+docker inspect centos3
+docker network connect net-claseb centos1
+
+
 ***********************************************************************
 volumen nombrado para mantener persistencia de datos
 ***********************************************************************
